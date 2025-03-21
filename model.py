@@ -13,8 +13,8 @@ class Model:
             filename="Nxcode-CQ-7B-orpo.Q8_0.gguf",
             verbose=False,
             n_gpu_layers=-1,
-            n_threads=16,
-            n_ctx = 1<<9,
+            n_threads=12,
+            n_ctx = 1<<10,
         )
         
     
@@ -27,6 +27,12 @@ class Model:
             ],
         )
         return response["choices"][0]["message"]["content"]
+    
+    def _translate(self, problem: str) -> str:
+        prompt = f"Translate this text to English.\n###\n{problem}\n###\n"
+        result = self.ask(prompt)
+        print(result)
+        return result
     
     def extract_code(self, text: str) -> str:
         found = self.code_pattern.search(text)
@@ -46,6 +52,12 @@ class Model:
         result = self.ask(prompt)
         print(result)
         return self.extract_json(result) or self.extract_code(result)
+    
+    def create_translated_solution(self, problem_ru):
+        problem_en = self._translate(problem_ru)
+        prompt = f"Solve next problem using python.\n###\n{problem_en}\n###\n"
+        return self.extract_code(self.ask(prompt))
+    
 
 if __name__ == "__main__":
     model = Model()
